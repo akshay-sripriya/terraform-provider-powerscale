@@ -85,6 +85,92 @@ func TestAccGroupnetDataSourceInvalidNames(t *testing.T) {
 	})
 }
 
+func TestAccGroupnetDataSourceFilterDNSCache(t *testing.T) {
+	var groupnetTerraformName = "data.powerscale_groupnet.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// filter with DNS cache read testing
+			{
+				Config: ProviderConfig + groupnetFilterDNSCacheDataSourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(groupnetTerraformName, "groupnets.#"),
+					resource.TestCheckResourceAttr(groupnetTerraformName, "groupnets.0.dns_cache_enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccGroupnetDataSourceFilterAllowWildcardSubdomains(t *testing.T) {
+	var groupnetTerraformName = "data.powerscale_groupnet.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// filter with allow_wildcard_subdomains read testing
+			{
+				Config: ProviderConfig + groupnetFilterAllowWildcardSubdomainsDataSourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(groupnetTerraformName, "groupnets.#"),
+					resource.TestCheckResourceAttr(groupnetTerraformName, "groupnets.0.allow_wildcard_subdomains", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccGroupnetDataSourceFilterDNSResolverRotate(t *testing.T) {
+	var groupnetTerraformName = "data.powerscale_groupnet.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// filter with DNS resolver rotate read testing
+			{
+				Config: ProviderConfig + groupnetFilterDNSResolverRotateDataSourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(groupnetTerraformName, "groupnets.#"),
+					resource.TestCheckResourceAttr(groupnetTerraformName, "groupnets.0.dns_resolver_rotate", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccGroupnetDataSourceFilterServerSideDNSSearch(t *testing.T) {
+	var groupnetTerraformName = "data.powerscale_groupnet.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// filter with server_side_dns_search read testing
+			{
+				Config: ProviderConfig + groupnetFilterServerSideDNSSearchDataSourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(groupnetTerraformName, "groupnets.#"),
+					resource.TestCheckResourceAttr(groupnetTerraformName, "groupnets.0.server_side_dns_search", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccGroupnetDataSourceInvalidFilter(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// filter with invalid filter read testing
+			{
+				Config:      ProviderConfig + groupnetFilterInvalidDataSourceConfig,
+				ExpectError: regexp.MustCompile(`.*is not expected here.*.`),
+			},
+		},
+	})
+}
+
 func TestAccGroupnetDatasourceErrorCopyField(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -160,6 +246,88 @@ data "powerscale_groupnet" "test" {
 }
 `
 
+var groupnetFilterDNSCacheDataSourceConfig = `
+resource "powerscale_groupnet" "test" {
+	name = "tfaccGroupnetDatasourceDNS"
+	dns_cache_enabled = false
+	description = "terraform groupnet datasource"
+	allow_wildcard_subdomains = false
+	server_side_dns_search = true
+	dns_resolver_rotate = true
+	dns_search = ["pie.lab.emc.com"]
+	dns_servers = ["10.230.44.169"]
+  }
+
+data "powerscale_groupnet" "test" {
+  filter {
+	dns_cache_enabled = false
+  }
+  depends_on = [
+	powerscale_groupnet.test
+  ]
+}
+`
+
+var groupnetFilterAllowWildcardSubdomainsDataSourceConfig = `
+resource "powerscale_groupnet" "test" {
+	name = "tfaccGroupnetDatasourceWildCard"
+	dns_cache_enabled = false
+	description = "terraform groupnet datasource"
+	allow_wildcard_subdomains = false
+	server_side_dns_search = true
+	dns_resolver_rotate = true
+	dns_search = ["pie.lab.emc.com"]
+	dns_servers = ["10.230.44.169"]
+  }
+
+data "powerscale_groupnet" "test" {
+  filter {
+	dns_cache_enabled = false
+  }
+  depends_on = [
+	powerscale_groupnet.test
+  ]
+}
+`
+
+var groupnetFilterDNSResolverRotateDataSourceConfig = `
+resource "powerscale_groupnet" "test" {
+	name = "tfaccGroupnetDatasourceRotate"
+	dns_cache_enabled = false
+	description = "terraform groupnet datasource"
+	allow_wildcard_subdomains = false
+	server_side_dns_search = true
+	dns_resolver_rotate = true
+	dns_search = ["pie.lab.emc.com"]
+	dns_servers = ["10.230.44.169"]
+  }
+
+data "powerscale_groupnet" "test" {
+  filter {
+	dns_resolver_rotate = true
+  }
+}
+`
+
+var groupnetFilterServerSideDNSSearchDataSourceConfig = `
+resource "powerscale_groupnet" "test" {
+	name = "tfaccGroupnetDatasourceDNSSearch"
+	dns_cache_enabled = false
+	description = "terraform groupnet datasource"
+	allow_wildcard_subdomains = false
+	server_side_dns_search = true
+	dns_resolver_rotate = true
+	dns_search = ["pie.lab.emc.com"]
+	dns_servers = ["10.230.44.169"]
+  }
+
+data "powerscale_groupnet" "test" {
+  filter {
+	server_side_dns_search = true
+  }
+}
+`
+
 var groupnetAllDataSourceConfig = `
 data "powerscale_groupnet" "all" {
 }
@@ -168,6 +336,14 @@ var groupnetInvalidFilterDataSourceConfig = `
 data "powerscale_groupnet" "test" {
   filter {
     names = ["invalidName"]
+  }
+}
+`
+
+var groupnetFilterInvalidDataSourceConfig = `
+data "powerscale_groupnet" "test" {
+  filter {
+	badfilter = "invalidFilter"
   }
 }
 `

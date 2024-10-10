@@ -130,8 +130,34 @@ func (d *GroupnetDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 			"filter": schema.SingleNestedBlock{
 				Attributes: map[string]schema.Attribute{
 					"names": schema.SetAttribute{
-						Optional:    true,
-						ElementType: types.StringType,
+						Description:         "Filter groupnets by name.",
+						MarkdownDescription: "Filter groupnets by name.",
+						Optional:            true,
+						ElementType:         types.StringType,
+					},
+
+					"dns_cache_enabled": schema.BoolAttribute{
+						Description:         "Filter groupnets by DNS cache enabled (true) or disabled (false).",
+						MarkdownDescription: "Filter groupnets by DNS cache enabled (true) or disabled (false).",
+						Optional:            true,
+					},
+
+					"allow_wildcard_subdomains": schema.BoolAttribute{
+						Description:         "Filter groupnets by allow wildcard subdomains (true) or disabled (false).",
+						MarkdownDescription: "Filter groupnets by allow wildcard subdomains (true) or disabled (false).",
+						Optional:            true,
+					},
+
+					"dns_resolver_rotate": schema.BoolAttribute{
+						Description:         "Filter groupnets by DNS resolver rotate (true) or disabled (false).",
+						MarkdownDescription: "Filter groupnets by DNS resolver rotate (true) or disabled (false).",
+						Optional:            true,
+					},
+
+					"server_side_dns_search": schema.BoolAttribute{
+						Description:         "Filter groupnets by server side DNS search (true) or disabled (false).",
+						MarkdownDescription: "Filter groupnets by server side DNS search (true) or disabled (false).",
+						Optional:            true,
 					},
 				},
 			},
@@ -207,6 +233,94 @@ func (d *GroupnetDataSource) Read(ctx context.Context, req datasource.ReadReques
 			resp.Diagnostics.AddError(
 				"Error one or more of the filtered groupnet names is not a valid powerscale groupnet.",
 				fmt.Sprintf("Valid groupnets: [%v], filtered list: [%v]", strings.Join(validGroupnets, " , "), state.Filter.Names),
+			)
+		}
+	}
+
+	// filter groupnets by dns_cache_enabled
+	if state.Filter != nil && !state.Filter.DNSCache.IsNull() {
+		var validGroupnets []string
+		var filteredGroupnets []models.GroupnetModel
+
+		for _, groupnet := range state.Groupnets {
+			if groupnet.DNSCacheEnabled.Equal(state.Filter.DNSCache) {
+				filteredGroupnets = append(filteredGroupnets, groupnet)
+				validGroupnets = append(validGroupnets, groupnet.Name.ValueString())
+			}
+		}
+
+		state.Groupnets = filteredGroupnets
+
+		if len(state.Groupnets) == 0 {
+			resp.Diagnostics.AddError(
+				"Error no groupnets found with the specified dns_cache_enabled value.",
+				fmt.Sprintf("Valid groupnets: [%v], filtered list: [%v]", strings.Join(validGroupnets, " , "), state.Filter.DNSCache),
+			)
+		}
+	}
+
+	// filter groupnets by allow_wildcard_subdomains
+	if state.Filter != nil && !state.Filter.AllowWildcardSubdomains.IsNull() {
+		var validGroupnets []string
+		var filteredGroupnets []models.GroupnetModel
+
+		for _, groupnet := range state.Groupnets {
+			if groupnet.AllowWildcardSubdomains.Equal(state.Filter.AllowWildcardSubdomains) {
+				filteredGroupnets = append(filteredGroupnets, groupnet)
+				validGroupnets = append(validGroupnets, groupnet.Name.ValueString())
+			}
+		}
+
+		state.Groupnets = filteredGroupnets
+
+		if len(state.Groupnets) == 0 {
+			resp.Diagnostics.AddError(
+				"Error no groupnets found with the specified allow_wildcard_subdomains value.",
+				fmt.Sprintf("Valid groupnets: [%v], filtered list: [%v]", strings.Join(validGroupnets, " , "), state.Filter.AllowWildcardSubdomains),
+			)
+		}
+	}
+
+	// filter groupnets by dns_resolver_rotate
+	if state.Filter != nil && !state.Filter.DNSResolverRotate.IsNull() {
+		var validGroupnets []string
+		var filteredGroupnets []models.GroupnetModel
+
+		for _, groupnet := range state.Groupnets {
+			if groupnet.DNSResolverRotate.Equal(state.Filter.DNSResolverRotate) {
+				filteredGroupnets = append(filteredGroupnets, groupnet)
+				validGroupnets = append(validGroupnets, groupnet.Name.ValueString())
+			}
+		}
+
+		state.Groupnets = filteredGroupnets
+
+		if len(state.Groupnets) == 0 {
+			resp.Diagnostics.AddError(
+				"Error no groupnets found with the specified dns_resolver_rotate value.",
+				fmt.Sprintf("Valid groupnets: [%v], filtered list: [%v]", strings.Join(validGroupnets, " , "), state.Filter.DNSResolverRotate),
+			)
+		}
+	}
+
+	// filter groupnets by server_side_dns_search
+	if state.Filter != nil && !state.Filter.ServerSideDNSSearch.IsNull() {
+		var validGroupnets []string
+		var filteredGroupnets []models.GroupnetModel
+
+		for _, groupnet := range state.Groupnets {
+			if groupnet.ServerSideDNSSearch.Equal(state.Filter.ServerSideDNSSearch) {
+				filteredGroupnets = append(filteredGroupnets, groupnet)
+				validGroupnets = append(validGroupnets, groupnet.Name.ValueString())
+			}
+		}
+
+		state.Groupnets = filteredGroupnets
+
+		if len(state.Groupnets) == 0 {
+			resp.Diagnostics.AddError(
+				"Error no groupnets found with the specified server_side_dns_search value.",
+				fmt.Sprintf("Valid groupnets: [%v], filtered list: [%v]", strings.Join(validGroupnets, " , "), state.Filter.ServerSideDNSSearch),
 			)
 		}
 	}

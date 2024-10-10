@@ -25,6 +25,38 @@ data "powerscale_groupnet" "example_groupnet" {
   }
 }
 
+data "powerscale_groupnet" "example_groupnet" {
+  # Filter by dns_cache_enabled
+  filter {
+    dns_cache_enabled = false
+  }
+}
+
+data "powerscale_groupnet" "example_groupnet" {
+  # Filter by allow_wildcard_subdomains
+  filter {
+    allow_wildcard_subdomains = false
+    names = ["test"]
+  }
+}
+
+data "powerscale_groupnet" "example_groupnet" {
+  # Filter by dns_resolver_rotate
+  filter {
+    dns_resolver_rotate = true
+  }
+}
+
+data "powerscale_groupnet" "example_groupnet" {
+  # Filter by dns_cache_enabled and names
+  filter {
+    names = ["groupnet_name"]
+    dns_cache_enabled = true
+  }
+}
+
+
+
 # Output value of above block by executing 'terraform output' command.
 # The user can use the fetched information by the variable data.powerscale_groupnet.example_groupnet
 output "powerscale_groupnet_filter" {

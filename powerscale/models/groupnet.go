@@ -42,5 +42,9 @@ type GroupnetModel struct {
 
 // GroupnetFilterType holds filter attribute for groupnet.
 type GroupnetFilterType struct {
-	Names []types.String `tfsdk:"names"`
+	Names                   []types.String `tfsdk:"names"`
+	DNSCache                types.Bool     `tfsdk:"dns_cache_enabled"`
+	AllowWildcardSubdomains types.Bool     `tfsdk:"allow_wildcard_subdomains"`
+	DNSResolverRotate       types.Bool     `tfsdk:"dns_resolver_rotate"`
+	ServerSideDNSSearch     types.Bool     `tfsdk:"server_side_dns_search"`
 }
