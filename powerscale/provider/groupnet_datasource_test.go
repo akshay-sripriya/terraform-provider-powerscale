@@ -50,7 +50,7 @@ func TestAccGroupnetDataSourceFilterNames(t *testing.T) {
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// filter with names read testing
+			// filter with all filters read testing
 			{
 				Config: ProviderConfig + groupnetFilterDataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -239,6 +239,12 @@ resource "powerscale_groupnet" "test" {
 data "powerscale_groupnet" "test" {
   filter {
     names = ["tfaccGroupnetDatasourceDep"]
+	dns_cache_enabled = true
+	allow_wildcard_subdomains = false
+	server_side_dns_search = true
+	dns_resolver_rotate = true
+	dns_search = ["pie.lab.emc.com"]
+	dns_servers = ["10.230.44.169"]
   }
   depends_on = [
 	powerscale_groupnet.test

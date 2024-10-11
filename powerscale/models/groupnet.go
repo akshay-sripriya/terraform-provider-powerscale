@@ -47,4 +47,6 @@ type GroupnetFilterType struct {
 	AllowWildcardSubdomains types.Bool     `tfsdk:"allow_wildcard_subdomains"`
 	DNSResolverRotate       types.Bool     `tfsdk:"dns_resolver_rotate"`
 	ServerSideDNSSearch     types.Bool     `tfsdk:"server_side_dns_search"`
+	DNSSearch               types.List     `tfsdk:"dns_search"`
+	DNSServers              types.List     `tfsdk:"dns_servers"`
 }

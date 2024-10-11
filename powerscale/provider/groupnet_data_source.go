@@ -25,6 +25,7 @@ import (
 	"terraform-provider-powerscale/powerscale/helper"
 	"terraform-provider-powerscale/powerscale/models"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -158,6 +159,20 @@ func (d *GroupnetDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 						Description:         "Filter groupnets by server side DNS search (true) or disabled (false).",
 						MarkdownDescription: "Filter groupnets by server side DNS search (true) or disabled (false).",
 						Optional:            true,
+					},
+
+					"dns_search": schema.ListAttribute{
+						Description:         "Filter groupnets by DNS search suffixes.",
+						MarkdownDescription: "Filter groupnets by DNS search suffixes.",
+						Optional:            true,
+						ElementType:         types.StringType,
+					},
+
+					"dns_servers": schema.ListAttribute{
+						Description:         "Filter groupnets by Domain Name Server IP addresses.",
+						MarkdownDescription: "Filter groupnets by Domain Name Server IP addresses.",
+						Optional:            true,
+						ElementType:         types.StringType,
 					},
 				},
 			},
@@ -325,8 +340,68 @@ func (d *GroupnetDataSource) Read(ctx context.Context, req datasource.ReadReques
 		}
 	}
 
+	// filter groupnets by dns_search_suffixes
+	if state.Filter != nil && !state.Filter.DNSSearch.IsNull() && len(state.Filter.DNSSearch.Elements()) > 0 {
+		var validGroupnets []string
+		var filteredGroupnets []models.GroupnetModel
+
+		for _, groupnet := range state.Groupnets {
+			for _, search := range state.Filter.DNSSearch.Elements() {
+				if contains(groupnet.DNSSearch.Elements(), search) {
+					filteredGroupnets = append(filteredGroupnets, groupnet)
+					validGroupnets = append(validGroupnets, groupnet.Name.ValueString())
+					break
+				}
+			}
+		}
+
+		state.Groupnets = filteredGroupnets
+
+		if len(state.Groupnets) == 0 {
+			resp.Diagnostics.AddError(
+				"Error one or more of the filtered dns_search values is not a valid powerscale groupnet.",
+				fmt.Sprintf("Valid groupnets: [%v], filtered list: [%v]", strings.Join(validGroupnets, " , "), state.Filter.DNSSearch),
+			)
+		}
+	}
+
+	// filter groupnets by dns_servers
+	if state.Filter != nil && !state.Filter.DNSServers.IsNull() && len(state.Filter.DNSServers.Elements()) > 0 {
+		var validGroupnets []string
+		var filteredGroupnets []models.GroupnetModel
+
+		for _, groupnet := range state.Groupnets {
+			for _, search := range state.Filter.DNSServers.Elements() {
+				if contains(groupnet.DNSServers.Elements(), search) {
+					filteredGroupnets = append(filteredGroupnets, groupnet)
+					validGroupnets = append(validGroupnets, groupnet.Name.ValueString())
+					break
+				}
+			}
+		}
+
+		state.Groupnets = filteredGroupnets
+
+		if len(state.Groupnets) == 0 {
+			resp.Diagnostics.AddError(
+				"Error one or more of the filtered dns_servers values is not a valid powerscale groupnet.",
+				fmt.Sprintf("Valid groupnets: [%v], filtered list: [%v]", strings.Join(validGroupnets, " , "), state.Filter.DNSServers),
+			)
+		}
+	}
+
 	state.ID = types.StringValue("groupnet_datasource")
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	tflog.Info(ctx, "Done with Read Groupnet data source ")
+}
+
+// function to check if a string is in a list
+func contains(list []attr.Value, value attr.Value) bool {
+	for _, item := range list {
+		if item == value {
+			return true
+		}
+	}
+	return false
 }

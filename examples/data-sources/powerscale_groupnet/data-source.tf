@@ -48,12 +48,26 @@ data "powerscale_groupnet" "example_groupnet" {
 }
 
 data "powerscale_groupnet" "example_groupnet" {
-  # Filter by dns_cache_enabled and names
+  # Filter by all attributes
   filter {
-    names = ["groupnet_name"]
+    names = ["groupnet0"]
     dns_cache_enabled = true
+    dns_resolver_rotate = false
+    dns_search = ["pie.lab.emc.com"]
+    dns_servers = ["10.230.44.169"]
+    allow_wildcard_subdomains = true
+    server_side_dns_search = true
   }
 }
+
+# Any combination of filters will return the intersection of the filters. multiple values within the same filter return the union of the values
+# For example, 
+# name = ["name1", "name2"]
+# The above will return the union of name1 and name2
+
+# name = ["name1", "name2"]
+# dns_cache_enabled = true
+# The above will return the intersection of name and dns_cache_enabled
 
 
 
